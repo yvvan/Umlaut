@@ -30,11 +30,14 @@ static LRESULT CALLBACK ProcessLLKbd(int code, WPARAM w_param, LPARAM l_param) {
 
   KBDLLHOOKSTRUCT* kbd_struct = (KBDLLHOOKSTRUCT *)l_param;
   if (kbd_struct && w_param == WM_KEYDOWN) {
-    SHORT ctrl_state = GetKeyState(VK_CONTROL);
-    SHORT alt_state = GetKeyState(VK_MENU);
+    const SHORT ctrl_state = GetKeyState(VK_CONTROL);
+    const SHORT alt_state = GetKeyState(VK_MENU);
 
     if (ctrl_state < 0 && alt_state < 0) {
-      SHORT shift_state = GetKeyState(VK_SHIFT);
+      const SHORT shift_state = GetKeyState(VK_SHIFT);
+      const SHORT caps_state = GetKeyState(VK_CAPITAL);
+      const bool capital_letter = (shift_state < 0 && caps_state == 0) ||
+                            (shift_state >= 0 && caps_state == 1);
       INPUT input;
       switch (kbd_struct->vkCode) {
       case 0x53: // b
@@ -42,7 +45,7 @@ static LRESULT CALLBACK ProcessLLKbd(int code, WPARAM w_param, LPARAM l_param) {
         SendInput(1, &input, sizeof(INPUT));
         return 1;
       case 0x41: // a
-        if (shift_state < 0) {
+        if (capital_letter) {
           fillInput(input, w_param, 0xC4); //Ä
         } else {
           fillInput(input, w_param, 0xE4); //ä
@@ -50,7 +53,7 @@ static LRESULT CALLBACK ProcessLLKbd(int code, WPARAM w_param, LPARAM l_param) {
         SendInput(1, &input, sizeof(INPUT));
         return 1;
       case 0x4F: // o
-        if (shift_state < 0) {
+        if (capital_letter) {
           fillInput(input, w_param, 0xD6); //Ö
         } else {
           fillInput(input, w_param, 0xF6); //ö
@@ -58,7 +61,7 @@ static LRESULT CALLBACK ProcessLLKbd(int code, WPARAM w_param, LPARAM l_param) {
         SendInput(1, &input, sizeof(INPUT));
         return 1;
       case 0x55: // u
-        if (shift_state < 0) {
+        if (capital_letter) {
           fillInput(input, w_param, 0xDC); //Ü
         } else {
           fillInput(input, w_param, 0xFC); //ü
